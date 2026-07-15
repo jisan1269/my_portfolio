@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Jisan Portfolio</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body data-theme="dark">
+
+<div class="texture-layer"></div>
+<div class="texture-glow"><span></span><span></span></div>
+<div class="grain"></div>
+
+<!-- LOGIN -->
+<div id="loginView" class="admin-shell">
+  <div class="card login-box">
+    <h1>Admin sign in</h1>
+    <p>Sign in with the email/password account you created in Firebase Authentication.</p>
+    <div class="form-field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com">
+    </div>
+    <div class="form-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;">Sign in</button>
+    <div class="save-note" id="loginNote"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashView" class="admin-shell" style="display:none;">
+  <div class="admin-header">
+    <h1>Portfolio admin</h1>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="knob"></span></button>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+      <a class="btn btn-ghost" href="index.html">View site</a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="settings">Site settings</button>
+    <button class="tab-btn" data-tab="projects">Projects</button>
+    <button class="tab-btn" data-tab="research">Research</button>
+    <button class="tab-btn" data-tab="recognition">Recognition</button>
+    <button class="tab-btn" data-tab="certifications">Certifications</button>
+    <button class="tab-btn" data-tab="messages">Messages</button>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="tab-panel active" id="tab-settings">
+    <div class="card">
+      <div class="section-title">Photo &amp; links</div>
+      <div class="section-sub">These power the hero photo, buttons, and problem-solving stats on the homepage.</div>
+      <div class="form-field"><label for="cfgPhoto">Photo URL</label><input type="url" id="cfgPhoto" placeholder="https://.../photo.jpg"></div>
+      <div class="field-row">
+        <div class="form-field"><label for="cfgCV">CV / Resume URL</label><input type="url" id="cfgCV" placeholder="https://.../cv.pdf"></div>
+        <div class="form-field"><label for="cfgWork">Work portfolio URL</label><input type="url" id="cfgWork" placeholder="https://..."></div>
+      </div>
+      <div class="field-row">
+        <div class="form-field"><label for="cfgCFHandle">Codeforces handle</label><input type="text" id="cfgCFHandle" placeholder="handle"></div>
+        <div class="form-field"><label for="cfgCFSolved">Codeforces problems solved</label><input type="number" id="cfgCFSolved" placeholder="59"></div>
+      </div>
+      <div class="field-row">
+        <div class="form-field"><label for="cfgCCHandle">CodeChef handle</label><input type="text" id="cfgCCHandle" placeholder="handle"></div>
+        <div class="form-field"><label for="cfgCCSolved">CodeChef problems solved</label><input type="number" id="cfgCCSolved" placeholder="0"></div>
+      </div>
+      <button class="btn btn-primary" id="saveConfigBtn">Save settings</button>
+      <div class="save-note" id="configNote"></div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="tab-panel" id="tab-projects">
+    <div class="card">
+      <div class="section-title">Add a project</div>
+      <div class="form-field"><label>Title</label><input type="text" id="pTitle"></div>
+      <div class="form-field"><label>Description</label><textarea id="pDesc" rows="3"></textarea></div>
+      <div class="field-row">
+        <div class="form-field"><label>Tags / languages (comma separated)</label><input type="text" id="pTags" placeholder="C++, Data Structures"></div>
+        <div class="form-field"><label>Order (number, lower shows first)</label><input type="number" id="pOrder" value="0"></div>
+      </div>
+      <div class="field-row">
+        <div class="form-field"><label>GitHub link</label><input type="url" id="pGithub" placeholder="https://github.com/..."></div>
+        <div class="form-field"><label>Live demo link (optional)</label><input type="url" id="pLink"></div>
+      </div>
+      <button class="btn btn-primary" id="addProjectBtn">Add project</button>
+      <div class="save-note" id="projectNote"></div>
+    </div>
+    <div class="admin-list" id="projectsAdminList"></div>
+  </div>
+
+  <!-- RESEARCH -->
+  <div class="tab-panel" id="tab-research">
+    <div class="card">
+      <div class="section-title">Add a research entry</div>
+      <div class="form-field"><label>Title</label><input type="text" id="rTitle"></div>
+      <div class="field-row">
+        <div class="form-field"><label>Venue / type</label><input type="text" id="rVenue" placeholder="Undergraduate thesis, conference name..."></div>
+        <div class="form-field"><label>Order</label><input type="number" id="rOrder" value="0"></div>
+      </div>
+      <div class="form-field"><label>Description</label><textarea id="rDesc" rows="3"></textarea></div>
+      <div class="field-row">
+        <div class="form-field"><label>Tags (comma separated)</label><input type="text" id="rTags"></div>
+        <div class="form-field"><label>Link (optional)</label><input type="url" id="rLink"></div>
+      </div>
+      <button class="btn btn-primary" id="addResearchBtn">Add research</button>
+      <div class="save-note" id="researchNote"></div>
+    </div>
+    <div class="admin-list" id="researchAdminList"></div>
+  </div>
+
+  <!-- RECOGNITION -->
+  <div class="tab-panel" id="tab-recognition">
+    <div class="card">
+      <div class="section-title">Add recognition</div>
+      <div class="field-row">
+        <div class="form-field"><label>Category</label>
+          <select id="gCategory" style="font-family:var(--font-body);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);">
+            <option value="award">Award</option>
+            <option value="leadership">Leadership</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Year</label><input type="text" id="gYear" placeholder="2026"></div>
+      </div>
+      <div class="form-field"><label>Title</label><input type="text" id="gTitle"></div>
+      <div class="form-field"><label>Description</label><textarea id="gDesc" rows="2"></textarea></div>
+      <div class="form-field"><label>Order</label><input type="number" id="gOrder" value="0"></div>
+      <button class="btn btn-primary" id="addRecognitionBtn">Add recognition</button>
+      <div class="save-note" id="recognitionNote"></div>
+    </div>
+    <div class="admin-list" id="recognitionAdminList"></div>
+  </div>
+
+  <!-- CERTIFICATIONS -->
+  <div class="tab-panel" id="tab-certifications">
+    <div class="card">
+      <div class="section-title">Add a certification / course</div>
+      <div class="form-field"><label>Title</label><input type="text" id="tTitle"></div>
+      <div class="field-row">
+        <div class="form-field"><label>Issuer</label><input type="text" id="tIssuer"></div>
+        <div class="form-field"><label>Year</label><input type="text" id="tYear"></div>
+      </div>
+      <div class="field-row">
+        <div class="form-field"><label>Certificate link (optional)</label><input type="url" id="tLink"></div>
+        <div class="form-field"><label>Order</label><input type="number" id="tOrder" value="0"></div>
+      </div>
+      <button class="btn btn-primary" id="addCertBtn">Add certification</button>
+      <div class="save-note" id="certNote"></div>
+    </div>
+    <div class="admin-list" id="certAdminList"></div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="tab-panel" id="tab-messages">
+    <div class="section-title">Messages from the contact form</div>
+    <div class="admin-list" id="messagesList"></div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
