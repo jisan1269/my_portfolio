@@ -18,6 +18,7 @@
 
   --sidebar-w: 260px;
   --content-max: 880px;
+  --topbar-h: 66px;
 
   --ease: cubic-bezier(.22,1,.36,1);
 }
@@ -68,6 +69,8 @@ html{ scroll-behavior: smooth; }
   *,*::before,*::after{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
 }
 
+img{ max-width: 100%; height: auto; display: block; }
+ 
 body{
   margin:0;
   font-family: var(--font-body);
@@ -247,11 +250,14 @@ body{
 /* mobile top bar */
 .topbar{
   display:none;
-  position: sticky; top:0; z-index:50;
+  position: fixed; top:0; left:0; right:0;
+  height: var(--topbar-h);
+  z-index:70;
   align-items:center; justify-content:space-between;
   padding: 14px 18px;
-  background: rgba(var(--bg-rgb), .85);
+  background: rgba(var(--bg-rgb), .92);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* UPDATE: Safari/iOS prefix, was missing */
   border-bottom:1px solid var(--border);
 }
 .burger{
@@ -262,11 +268,12 @@ body{
 }
 .burger span, .burger::before, .burger::after{ content:''; display:block; width:16px; height:2px; background: var(--text); border-radius:2px; }
 .burger{ flex-direction:column; gap:3px; }
-
+ 
 .mobile-menu{
-  position: fixed; inset: 0; z-index: 60;
+  position: fixed; inset: 0; z-index: 80; /* UPDATE: raised from 60 to stay above the topbar's new z-index:70 */
   background: var(--scrim);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display:none;
 }
 .mobile-menu.open{ display:block; }
@@ -329,7 +336,7 @@ a{ color: inherit; }
 }
 .hero-eyebrow .cursor{ display:inline-block; width:8px; height:1em; background: var(--accent); margin-left:4px; vertical-align:-2px; animation: blink 1s steps(1) infinite; }
 @keyframes blink{ 50%{ opacity:0; } }
-
+ 
 .hero h1{
   font-size: clamp(2.3rem, 5vw, 3.6rem);
   color: var(--text);
@@ -345,7 +352,7 @@ a{ color: inherit; }
   margin: 14px 0 18px;
 }
 .hero .lede{ max-width: 52ch; font-size:1.03rem; }
-
+ 
 .btn-row{ display:flex; gap:14px; flex-wrap:wrap; margin: 26px 0 24px; }
 .btn{
   font-family: var(--font-body);
@@ -374,7 +381,7 @@ a{ color: inherit; }
 .btn[disabled], .btn.is-disabled{
   opacity:.5; cursor:not-allowed; pointer-events:none;
 }
-
+ 
 .social-row{ display:flex; gap:10px; margin-top: 6px; }
 .social-row a{
   width:42px;height:42px;border-radius:11px;
@@ -385,83 +392,122 @@ a{ color: inherit; }
 }
 .social-row a:hover{ color:#06110E; background: linear-gradient(120deg, var(--accent), var(--accent-2)); border-color: transparent; transform: translateY(-3px); }
 .social-row svg{ width:18px; height:18px; }
-
-/* ---------------- Photo — signature "compile ring" ---------------- */
+ 
+/* ---------------- Photo — static professional profile card ---------------- */
+/* UPDATE (fix #2 — animation caused the page to jump/jitter on mobile
+   "desktop mode"): the previous design continuously rotated a
+   conic-gradient ring, morphed its border-radius, animated an orbiting
+   scan line, and moved 3 orbiting dots — all running every frame,
+   forever. Forcing desktop-site rendering on a phone scales the whole
+   page, and repainting that much geometry every frame at a scaled-up
+   resolution is what caused the visible "screen coming up and down"
+   jank. Replaced with a fully static card: nothing below animates or
+   moves on its own. The only motion left is a normal, one-off hover
+   lift (desktop mouse only, same pattern used by .card elsewhere on
+   the site) — not a running animation.
+ 
+   UPDATE (professional redesign): the first static version was a plain
+   rounded rectangle with a single thin accent line on top, which read
+   as a flat pasted-in photo rather than a designed card — the corner
+   radius was too subtle to register and there was little contrast
+   against the dark page background. Redesigned as a "matte frame": a
+   static gradient border wraps the photo evenly on all four sides like
+   a gallery mat, sitting on a stronger, layered shadow for real lift.
+   Still fully static — nothing here animates.
+ 
+   UPDATE (added polish — shadow/hover effects): layered on a few
+   finishing touches that are common on premium portfolio sites, all
+   either hover-triggered (fires only on user interaction, not running
+   in a loop) or a single one-time entrance on page load (plays once,
+   then stops — not a repeating animation, so it doesn't reintroduce
+   the earlier scroll-jank bug):
+     1. a soft ambient glow fades in behind the whole card on hover
+     2. the photo itself zooms in slightly on hover (clipped by the
+        card's rounded corners, so it never spills outside the frame)
+     3. a hairline inner highlight on the photo edge for extra depth
+     4. the status badge rises in sync with the card on hover
+     5. a one-shot fade/rise-in when the page first loads */
 .portrait-wrap{
   position:relative;
-  width: min(340px, 82vw);
-  aspect-ratio: 1;
+  width: min(320px, 80vw);
   justify-self:center;
+  animation: portraitIn .9s var(--ease) both; /* plays once on load, then stops */
 }
-.portrait-ring{
-  position:absolute; inset:0;
-  border-radius: 32% 68% 62% 38% / 40% 34% 66% 60%;
-  padding: 4px;
-  background: conic-gradient(from 0deg, var(--accent), var(--accent-2), transparent 40%, var(--accent));
-  animation: spin 9s linear infinite;
+@keyframes portraitIn{
+  from{ opacity:0; transform: translateY(16px) scale(.97); }
+  to{ opacity:1; transform:none; }
 }
-@keyframes spin{ to{ transform: rotate(360deg); } }
-
-.portrait-inner{
-  position:absolute; inset:4px;
-  border-radius: 32% 68% 62% 38% / 40% 34% 66% 60%;
-  background: var(--surface);
+.portrait-wrap::before{
+  /* ambient glow behind the card — hidden by default, fades in on hover only */
+  content:'';
+  position:absolute; inset:-26px;
+  background: radial-gradient(closest-side, rgba(var(--accent-rgb),.38), transparent 72%);
+  filter: blur(22px);
+  opacity:0;
+  z-index:-1;
+  border-radius:50%;
+  transition: opacity .45s var(--ease);
+  pointer-events:none;
+}
+.portrait-wrap:hover::before{ opacity:1; }
+.portrait-card{
+  position:relative;
+  padding: 10px;
+  border-radius: 34px;
+  background: linear-gradient(155deg, var(--accent), var(--accent-2));
+  box-shadow: var(--shadow), 0 30px 60px -28px rgba(var(--accent-rgb),.4);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease); /* hover-only, not continuous */
+}
+.portrait-card:hover{
+  transform: translateY(-6px) scale(1.012);
+  box-shadow: var(--shadow), 0 38px 76px -22px rgba(var(--accent-rgb),.6);
+}
+.portrait-photo{
+  position:relative;
+  border-radius: 26px;
   overflow:hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--surface-2);
   display:flex; align-items:center; justify-content:center;
-  animation: morph 12s ease-in-out infinite;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); /* hairline edge highlight for depth */
 }
-@keyframes morph{
-  0%,100%{ border-radius: 32% 68% 62% 38% / 40% 34% 66% 60%; }
-  50%{ border-radius: 62% 38% 34% 66% / 62% 48% 52% 38%; }
-}
-.portrait-inner img{
+.portrait-photo img{
   width:100%; height:100%; object-fit:cover;
   display:block;
+  transition: transform .6s var(--ease); /* hover-only zoom, not continuous */
 }
-.portrait-inner .placeholder{
+.portrait-card:hover .portrait-photo img{
+  transform: scale(1.045);
+}
+.portrait-photo .placeholder{
   font-family: var(--font-display);
-  font-size: 3.4rem; font-weight:700;
+  font-size: 4rem; font-weight:700;
   color: var(--text-muted);
+  letter-spacing:.02em;
+  transition: transform .6s var(--ease); /* placeholder gets the same subtle zoom before a real photo is added */
 }
-.portrait-scan{
-  position:absolute; left:6%; right:6%; height:2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb),.9));
-  animation: scan 3.4s ease-in-out infinite;
-  opacity:.85;
-}
-@keyframes scan{
-  0%{ top: 8%; opacity:0; }
-  10%{ opacity:.9; }
-  50%{ top: 88%; opacity:.9; }
-  60%{ opacity:0; }
-  100%{ top: 8%; opacity:0; }
-}
-.portrait-node{
-  position:absolute;
-  width:10px;height:10px;border-radius:50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(var(--accent-rgb),.8);
-  animation: orbit 7s linear infinite;
-}
-.portrait-node.n2{ background: var(--accent-2); box-shadow: 0 0 12px rgba(var(--accent-2-rgb),.8); animation-duration: 10s; animation-direction: reverse; }
-.portrait-node.n3{ width:6px;height:6px; animation-duration: 13s; }
-@keyframes orbit{
-  from{ transform: rotate(0deg) translateX(168px) rotate(0deg); }
-  to{ transform: rotate(360deg) translateX(168px) rotate(-360deg); }
+.portrait-card:hover .portrait-photo .placeholder{
+  transform: scale(1.06);
 }
 .status-chip{
-  position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+  position:relative;
+  width: fit-content;
+  margin: -22px auto 0; /* overlaps the bottom edge of the card, static offset only */
   display:flex; align-items:center; gap:8px;
   background: var(--surface);
   border:1px solid var(--border);
-  padding:8px 14px; border-radius:999px;
-  font-family: var(--font-mono); font-size:.75rem;
+  padding:10px 16px; border-radius:999px;
+  font-family: var(--font-mono); font-size:.78rem;
   box-shadow: var(--shadow);
   white-space:nowrap;
+  z-index:3;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease); /* rises together with the card on hover */
 }
-.status-chip .dot{ width:8px;height:8px;border-radius:50%; background: var(--accent); animation: pulse 1.8s ease-in-out infinite; }
-@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(var(--accent-rgb),.55);} 50%{ box-shadow:0 0 0 6px rgba(var(--accent-rgb),0);} }
+.portrait-wrap:hover .status-chip{
+  transform: translateY(-6px);
+  box-shadow: var(--shadow), 0 10px 22px -10px rgba(var(--accent-rgb),.45);
+}
+.status-chip .dot{ width:8px;height:8px;border-radius:50%; background: var(--accent); } /* UPDATE: removed the infinite pulse keyframe animation, now a solid static dot */
 
 /* ---------------- Cards / generic ---------------- */
 .card{
@@ -612,11 +658,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (max-width: 900px){
   .sidebar{ display:none; }
   .topbar{ display:flex; }
+  .shell{ margin-top: var(--topbar-h); } /* UPDATE (fix #1): offsets the now-fixed topbar so it no longer overlaps/hides the top of the page */
   .content{ padding: 40px 6vw 100px; gap: 96px; }
   .hero{ grid-template-columns:1fr; text-align:center; min-height:auto; padding-top:20px; }
   .hero .lede{ margin:0 auto 14px; }
   .btn-row, .social-row{ justify-content:center; }
-  .portrait-wrap{ order:-1; margin: 0 auto 20px; }
+  .portrait-wrap{ order:-1; margin: 0 auto 20px; } /* unchanged — still applies to the new static .portrait-card */
   .contact-grid{ grid-template-columns:1fr; gap:28px; }
 }
 @media (max-width: 620px){
