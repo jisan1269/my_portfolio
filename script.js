@@ -1,5 +1,5 @@
 /* =========================================================
-   Portfolio front-end logic
+               Portfolio front-end logic
    ========================================================= */
 
 (function () {
@@ -284,46 +284,81 @@
       .catch(() => renderCertifications([]));
   }
 
-  /* ---------------- Contact form ---------------- */
-  const form = document.getElementById("contactForm");
-  const status = document.getElementById("formStatus");
-  const sendBtn = document.getElementById("sendBtn");
+/* ---------------- Contact Form ---------------- */
 
-  form.addEventListener("submit", (e) => {
+const form = document.getElementById("contactForm");
+const status = document.getElementById("formStatus");
+const sendBtn = document.getElementById("sendBtn");
+
+form.addEventListener("submit", async (e) => {
+
     e.preventDefault();
+
     const name = document.getElementById("cName").value.trim();
     const email = document.getElementById("cEmail").value.trim();
     const message = document.getElementById("cMsg").value.trim();
 
     if (!name || !email || !message) {
-      status.textContent = "Please fill in every field.";
-      status.className = "form-status err";
-      return;
-    }
-    if (!firebaseReady) {
-      status.textContent = "Messaging isn't connected yet — reach out directly via email for now.";
-      status.className = "form-status err";
-      return;
+        status.textContent = "Please fill in every field.";
+        status.className = "form-status err";
+        return;
     }
 
     sendBtn.disabled = true;
-    sendBtn.textContent = "Sending…";
+    sendBtn.textContent = "Sending...";
 
-    db.collection("messages").add({
-      name, email, message,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      read: false
-    }).then(() => {
-      status.textContent = "Message sent — thank you! I'll get back to you soon.";
-      status.className = "form-status ok";
-      form.reset();
-    }).catch((err) => {
-      console.error(err);
-      status.textContent = "Something went wrong sending your message. Please try again.";
-      status.className = "form-status err";
-    }).finally(() => {
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send message";
-    });
-  });
+    try {
+
+        /* ---------- Save to Firebase ---------- */
+
+        if (firebaseReady) {
+
+            await db.collection("messages").add({
+
+                name,
+                email,
+                message,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                read: false
+
+            });
+
+        }
+
+        /* ---------- Send Email ---------- */
+
+        await emailjs.sendForm(
+
+            "service_gbumphw",     
+
+            "template_t5vz1t9",     
+
+            form
+
+        );
+
+        status.textContent = "Message sent successfully!";
+        status.className = "form-status ok";
+
+        form.reset();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent = "Failed to send message!";
+        status.className = "form-status err";
+
+    }
+
+    finally {
+
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send message";
+
+    }
+
+});
 })();
